@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { TwitterIcon } from "lucide-react";
 
 interface HeroSectionProps {
@@ -13,6 +13,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ title, subtitle, description }: HeroSectionProps) {
   const ref = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -52,17 +53,55 @@ export function HeroSection({ title, subtitle, description }: HeroSectionProps) 
             <TwitterIcon className="w-8 h-8" />
           </motion.div>
 
-          <motion.h1
-            className="text-5xl md:text-7xl font-normal font-dotmatrix tracking-wider text-twitter-blue"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+          <motion.div
+            className="relative h-32"
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
           >
-            Twi.am
-          </motion.h1>
+            <AnimatePresence>
+              {!isHovered ? (
+                <motion.h1
+                  key="compact"
+                  className="text-6xl md:text-8xl font-normal font-dotmatrix tracking-wider absolute left-1/2 -translate-x-1/2 whitespace-nowrap bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  Twi.am
+                </motion.h1>
+              ) : (
+                <motion.div
+                  key="expanded"
+                  className="flex items-center gap-6 absolute left-1/2 -translate-x-1/2 whitespace-nowrap"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <motion.span 
+                    className="text-6xl md:text-8xl font-normal font-dotmatrix tracking-wider inline-block bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm"
+                    initial={{ x: -20 }}
+                    animate={{ x: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  >
+                    Twitter
+                  </motion.span>
+                  <motion.span 
+                    className="text-6xl md:text-8xl font-normal font-dotmatrix tracking-wider inline-block bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm"
+                    initial={{ x: 20 }}
+                    animate={{ x: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  >
+                    I&nbsp;am
+                  </motion.span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           <motion.h2
-            className="text-2xl md:text-3xl font-medium text-twitter-blue/80"
+            className="text-xl md:text-2xl font-silkscreen tracking-wide text-twitter-blue/90"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}

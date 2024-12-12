@@ -25,11 +25,7 @@ products:
       - "High-resolution output"
 
 footer:
-  links:
-    - text: "GitHub"
-      url: "https://github.com/stvlynn/TwitterInstantPortrait"
-      type: "link"
-    
+  links: 
     - text: "Twitter Follow"
       url: "https://twitter.com/stv_lynn"
       type: "twitter"
@@ -40,7 +36,3 @@ footer:
       type: "coffee"
       image: "https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
     
-    - text: "Kimi AI"
-      url: "https://kimi.moonshot.cn/"
-      type: "kimi"
-      image: "/img/moonshot-text.svg"

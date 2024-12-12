@@ -12,6 +12,7 @@ const config: Config = {
       fontFamily: {
         playfair: ['var(--font-playfair)'],
         dotmatrix: ['DotMatrix', 'monospace'],
+        silkscreen: ['var(--font-silkscreen)', 'monospace'],
       },
       colors: {
         twitter: {
