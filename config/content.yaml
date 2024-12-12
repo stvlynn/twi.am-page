@@ -1,0 +1,46 @@
+header:
+  title: "Twi.AM"
+  subtitle: "Know yourself better through Twitter analytics"
+  description: "Discover insights about your Twitter personality and create beautiful AI-generated portraits"
+
+products:
+  - name: "Twitter MBTI Receipt"
+    domain: "mbti.twi.am"
+    description: "Generate a personalized MBTI receipt based on your Twitter activity"
+    icon: "https://cdn.jsdelivr.net/gh/stvlynn/twi.am@main/favicon.ico"
+    link: "https://mbti.twi.am"
+    features:
+      - "Personality analysis based on tweets"
+      - "Beautiful receipt-style format"
+      - "Instant results"
+
+  - name: "Twitter Instant Portrait"
+    domain: "portrait.twi.am"
+    description: "Transform your Twitter profile into stunning AI-generated portraits"
+    link: "https://portrait.twi.am"
+    icon: "https://cdn.jsdelivr.net/gh/stvlynn/TwitterInstantPortrait@main/public/favicon.png"
+    features:
+      - "AI-powered portrait generation"
+      - "Multiple artistic styles"
+      - "High-resolution output"
+
+footer:
+  links:
+    - text: "GitHub"
+      url: "https://github.com/stvlynn/TwitterInstantPortrait"
+      type: "link"
+    
+    - text: "Twitter Follow"
+      url: "https://twitter.com/stv_lynn"
+      type: "twitter"
+      image: "https://img.shields.io/twitter/follow/stv_lynn"
+    
+    - text: "Buy Me A Coffee"
+      url: "https://www.buymeacoffee.com/stvlynn"
+      type: "coffee"
+      image: "https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
+    
+    - text: "Kimi AI"
+      url: "https://kimi.moonshot.cn/"
+      type: "kimi"
+      image: "/img/moonshot-text.svg"
