@@ -1,7 +1,5 @@
 header:
-  title: "Twi.AM"
   subtitle: "Know yourself better through AI agent analytics"
-  description: "Discover insights about your Twitter personality and create beautiful AI-generated portraits"
 
 products:
   - name: "Twitter MBTI Receipt"
@@ -35,4 +33,8 @@ footer:
       url: "https://www.buymeacoffee.com/stvlynn"
       type: "coffee"
       image: "https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
-    
+
+    - text: "Dify"
+      url: "https://dify.ai"
+      type: "dify"
+      image: "https://assets.dify.ai/images/dify_logo_dark_s.png"

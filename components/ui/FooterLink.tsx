@@ -9,13 +9,14 @@ export function FooterLink({ link }: { link: FooterLinkType }) {
       rel="noopener noreferrer"
       className="inline-flex items-center hover:opacity-80 transition-opacity"
     >
-      {link.type === "kimi" ? (
+      {link.type === "kimi" || link.type === "dify" ? (
         <div className="bg-gray-100 rounded-md p-0.5">
           <Image
             src={link.image!}
             alt={link.text}
-            width={56}
+            width={link.type === "dify" ? 48 : 56}
             height={14}
+            className="h-[14px] w-auto"
           />
         </div>
       ) : link.image ? (
