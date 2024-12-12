@@ -53,12 +53,12 @@ export function HeroSection({ title, subtitle, description }: HeroSectionProps) 
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-twitter-blue via-twitter-darker to-twitter-lighter bg-clip-text text-transparent"
+            className="text-5xl md:text-7xl font-normal font-dotmatrix tracking-wider text-twitter-blue"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            {title}
+            Twi.am
           </motion.h1>
 
           <motion.h2
@@ -69,15 +69,6 @@ export function HeroSection({ title, subtitle, description }: HeroSectionProps) 
           >
             {subtitle}
           </motion.h2>
-
-          <motion.p
-            className="max-w-2xl text-muted-foreground"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            {description}
-          </motion.p>
         </motion.div>
       </div>
     </motion.section>

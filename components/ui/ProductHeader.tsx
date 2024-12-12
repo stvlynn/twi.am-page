@@ -14,7 +14,7 @@ export function ProductHeader({ name, domain, icon }: ProductHeaderProps) {
     <div className="p-6 text-center">
       <ProductIcon icon={icon} name={name} />
       <motion.h3
-        className="text-2xl font-bold bg-gradient-to-r from-twitter-blue to-twitter-lighter bg-clip-text text-transparent"
+        className="text-2xl font-normal text-twitter-blue tracking-wider font-dotmatrix uppercase"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}

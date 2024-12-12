@@ -31,18 +31,23 @@ export function CardLink({ index, href, children }: CardLinkProps) {
   };
 
   return (
-    <Link href={href} target="_blank" rel="noopener noreferrer">
-      <motion.a
+    <Link 
+      href={href} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="block h-full"
+    >
+      <motion.div
         ref={ref}
         custom={index}
         initial="hidden"
         animate={inView ? "visible" : "hidden"}
         variants={variants}
         whileHover={{ scale: 1.02 }}
-        className="h-full block"
+        className="h-full"
       >
         {children}
-      </motion.a>
+      </motion.div>
     </Link>
   );
 }

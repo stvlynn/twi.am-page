@@ -11,7 +11,7 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
 
   return (
     <CardLink href={product.link} index={index}>
-      <Card className="h-full hover:shadow-lg transition-shadow duration-300 group">
+      <Card className="h-full bg-white/95 hover:bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <ProductHeader
           name={product.name}
           domain={product.domain}

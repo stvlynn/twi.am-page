@@ -51,4 +51,12 @@
   animation: float 6s ease-in-out infinite;
 }
 
+@font-face {
+  font-family: 'DotMatrix';
+  src: url('/fonts/DOTMATRI.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Rest of your existing CSS... */

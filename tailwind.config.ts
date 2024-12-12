@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        playfair: ['var(--font-playfair)'],
+        dotmatrix: ['DotMatrix', 'monospace'],
+      },
       colors: {
         twitter: {
           blue: '#1DA1F2',
@@ -26,6 +30,8 @@ const config: Config = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'grid-white': 'url("/grid.svg")',
+        'grid-small-white': 'url("/grid-small.svg")',
       },
       // ... rest of your existing theme
     },

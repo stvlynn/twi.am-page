@@ -8,9 +8,11 @@ interface ProductContentProps {
 
 export function ProductContent({ description, features }: ProductContentProps) {
   return (
-    <CardContent>
-      <p className="mb-4 text-muted-foreground">{description}</p>
-      <ul className="space-y-2">
+    <CardContent className="flex flex-col gap-6">
+      <p className="text-base leading-relaxed tracking-wide text-gray-600 font-light">
+        {description}
+      </p>
+      <ul className="space-y-3">
         {features.map((feature, i) => (
           <ProductFeature key={i} feature={feature} />
         ))}
