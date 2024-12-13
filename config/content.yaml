@@ -6,7 +6,7 @@ og:
   description: "Know yourself better through AI agent analytics"
   image: "/og-image.png"
   url: "https://twi.am"
-  type: "website"
+  type: "article"
 
 products:
   - name: "Twitter MBTI Receipt"
