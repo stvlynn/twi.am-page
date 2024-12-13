@@ -14,16 +14,23 @@ export interface Product {
 export interface FooterLink {
   text: string;
   url: string;
-  type: 'link' | 'twitter' | 'coffee' | 'kimi';
+  type: 'link' | 'twitter' | 'coffee' | 'kimi' | 'dify' | 'license';
   image?: string;
+}
+
+export interface OpenGraph {
+  title: string;
+  description: string;
+  image: string;
+  url: string;
+  type: string;
 }
 
 export interface Config {
   header: {
-    title: string;
     subtitle: string;
-    description: string;
   };
+  og: OpenGraph;
   products: Product[];
   footer: {
     links: FooterLink[];
