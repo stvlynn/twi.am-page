@@ -45,3 +45,8 @@ footer:
       url: "https://dify.ai"
       type: "dify"
       image: "https://assets.dify.ai/images/dify_logo_dark_s.png"
+
+    - text: "License"
+      url: "https://github.com/stvlynn/twi.am-page/blob/main/LICENSE"
+      type: "license"
+      image: "https://img.shields.io/github/license/stvlynn/twi.am-page?logo=github"
