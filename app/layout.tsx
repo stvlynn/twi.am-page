@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display, Silkscreen } from 'next/font/google';
 import { PixelBackground } from '@/components/ui/PixelBackground';
+import { getConfig } from '@/lib/config';
 
 const inter = Inter({ subsets: ['latin'] });
 const playfair = Playfair_Display({
@@ -14,9 +15,32 @@ const silkscreen = Silkscreen({
   variable: '--font-silkscreen',
 });
 
+const config = getConfig();
+
 export const metadata: Metadata = {
-  title: 'Twi.am',
-  description: '',
+  title: config.og.title,
+  description: config.og.description,
+  openGraph: {
+    title: config.og.title,
+    description: config.og.description,
+    url: config.og.url,
+    siteName: config.og.title,
+    images: [
+      {
+        url: config.og.image,
+        width: 760,
+        height: 468,
+      },
+    ],
+    locale: 'en_US',
+    type: config.og.type,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: config.og.title,
+    description: config.og.description,
+    images: [config.og.image],
+  },
 };
 
 export default function RootLayout({

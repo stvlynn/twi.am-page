@@ -1,6 +1,13 @@
 header:
   subtitle: "Know yourself better through AI agent analytics"
 
+og:
+  title: "Twi.am"
+  description: "Know yourself better through AI agent analytics"
+  image: "/og-image.png"
+  url: "https://twi.am"
+  type: "website"
+
 products:
   - name: "Twitter MBTI Receipt"
     domain: "mbti.twi.am"
