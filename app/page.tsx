@@ -9,9 +9,9 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <HeroSection
-        title={config.header.title}
+        title="Twi.am"
         subtitle={config.header.subtitle}
-        description={config.header.description}
+        description={config.og.description}
       />
 
       <section className="py-20">

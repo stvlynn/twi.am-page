@@ -8,7 +8,7 @@ import { TwitterIcon } from "lucide-react";
 interface HeroSectionProps {
   title: string;
   subtitle: string;
-  description: string;
+  description?: string;
 }
 
 export function HeroSection({ title, subtitle, description }: HeroSectionProps) {

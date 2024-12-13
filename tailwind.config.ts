@@ -10,9 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        playfair: ['var(--font-playfair)'],
+        inter: ['Inter', 'sans-serif'],
+        playfair: ['Playfair Display', 'serif'],
         dotmatrix: ['DotMatrix', 'monospace'],
-        silkscreen: ['var(--font-silkscreen)', 'monospace'],
+        silkscreen: ['Silkscreen', 'monospace'],
       },
       colors: {
         twitter: {
@@ -26,17 +27,15 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // ... rest of your existing colors
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'grid-white': 'url("/grid.svg")',
-        'grid-small-white': 'url("/grid-small.svg")',
+        'grid-white': 'url("/grid-small.svg")',
       },
-      // ... rest of your existing theme
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [],
 };
+
 export default config;

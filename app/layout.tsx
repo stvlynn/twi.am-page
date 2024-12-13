@@ -1,25 +1,23 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display, Silkscreen } from 'next/font/google';
-import { PixelBackground } from '@/components/ui/PixelBackground';
 import { getConfig } from '@/lib/config';
 
-const inter = Inter({ subsets: ['latin'] });
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair',
-});
-const silkscreen = Silkscreen({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-silkscreen',
-});
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/700.css';
+import '@fontsource/silkscreen/400.css';
+import '@fontsource/silkscreen/700.css';
+
+import { PixelBackground } from '@/components/ui/PixelBackground';
 
 const config = getConfig();
 
 export const metadata: Metadata = {
   title: config.og.title,
   description: config.og.description,
+  metadataBase: new URL('https://twi.am'),
   openGraph: {
     title: config.og.title,
     description: config.og.description,
@@ -50,7 +48,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${playfair.variable} ${silkscreen.variable}`}>
+      <body className="font-inter">
         <PixelBackground />
         {children}
       </body>
