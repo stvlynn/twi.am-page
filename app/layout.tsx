@@ -49,6 +49,16 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: [
+      { url: '/favicon.png' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/favicon.png' },
+    ],
+  },
   openGraph: {
     title: config.og.title,
     description: config.og.description,
@@ -57,8 +67,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: config.og.image,
-        width: 760,
-        height: 468,
+        width: 512,
+        height: 512,
         alt: 'Twi.am - AI-powered Twitter Analytics',
       },
     ],
@@ -66,7 +76,7 @@ export const metadata: Metadata = {
     type: config.og.type,
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: config.og.title,
     description: config.og.description,
     creator: '@stv_lynn',
@@ -99,6 +109,8 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://twi.am" />
         <meta name="theme-color" content="#1DA1F2" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
       </head>
       <body className="font-inter">
         <PixelBackground />

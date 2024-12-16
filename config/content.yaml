@@ -4,9 +4,9 @@ header:
 og:
   title: "Twi.am"
   description: "Know yourself better through AI agent analytics"
-  image: "/og-image.png"
+  image: "/favicon.png"
   url: "https://twi.am"
-  type: "article"
+  type: "website"
 
 products:
   - name: "Twitter MBTI Receipt"
