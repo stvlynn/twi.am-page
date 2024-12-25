@@ -51,6 +51,7 @@ products:
     link: "https://kanji.twi.am"
     icon: "https://cdn.jsdelivr.net/gh/stvlynn/TwitterYearlyKanji@main/public/favicon.png"
     features:
+      - "Kanji of the year"
   
 
 footer:
