@@ -37,6 +37,22 @@ products:
     features:
       - "Randomly select winners from Twitter/X post replies"
 
+  - name: "Twitter Christmas Avatar"
+    domain: "christmas.twi.am"
+    description: "Transform your Twitter profile into a festive Christmas portrait!"
+    link: "https://christmas.twi.am"
+    icon: "https://cdn.jsdelivr.net/gh/stvlynn/TwitterChristmas@main/public/favicon.png"
+    features:
+      - "AI-powered portrait generation"
+
+  - name: "Twitter Yearly Kanji"
+    domain: "kanji.twi.am"
+    description: "Generate your yearly kanji based on your tweets"
+    link: "https://kanji.twi.am"
+    icon: "https://cdn.jsdelivr.net/gh/stvlynn/TwitterYearlyKanji@main/public/favicon.png"
+    features:
+  
+
 footer:
   links: 
     - text: "Twitter Follow"
