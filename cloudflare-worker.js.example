@@ -1,0 +1,174 @@
+// 如果选择使用Cloudflare Worker而不是Next.js API路由，可以参考以下实现方式
+// 此文件仅作为示例，不会在当前实现中使用
+
+// 在Cloudflare Workers中创建环境变量:
+// TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, TWITTER_REDIRECT_URI, ALLOWED_ORIGIN
+
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request));
+});
+
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  // 路由处理
+  if (path === '/auth/twitter') {
+    return handleTwitterAuth(request);
+  } else if (path === '/auth/twitter/callback') {
+    return handleTwitterCallback(request);
+  }
+
+  // 404 - 路由不匹配
+  return new Response('Not found', { status: 404 });
+}
+
+// 生成随机状态参数以防CSRF攻击
+function generateState() {
+  return Math.random().toString(36).substring(2);
+}
+
+// 处理Twitter授权请求
+async function handleTwitterAuth(request) {
+  try {
+    const url = new URL(request.url);
+    const returnUrl = url.searchParams.get('returnUrl') || ALLOWED_ORIGIN;
+    
+    // 生成状态参数
+    const state = generateState();
+    
+    // 构建Twitter OAuth2授权URL
+    const authUrl = new URL('https://twitter.com/i/oauth2/authorize');
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('client_id', TWITTER_CLIENT_ID);
+    authUrl.searchParams.append('redirect_uri', TWITTER_REDIRECT_URI);
+    authUrl.searchParams.append('scope', 'users.read tweet.read');
+    authUrl.searchParams.append('state', state);
+    authUrl.searchParams.append('code_challenge', 'challenge'); // 生产环境应使用PKCE
+    authUrl.searchParams.append('code_challenge_method', 'plain');
+    
+    // 将状态和返回URL存储在cookie中
+    const headers = new Headers({
+      'Location': authUrl.toString(),
+      'Set-Cookie': `auth_state=${state}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`,
+      'Set-Cookie': `auth_return_url=${returnUrl}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`
+    });
+    
+    return new Response(null, {
+      status: 302,
+      headers
+    });
+  } catch (error) {
+    console.error('Twitter auth error:', error);
+    return new Response(JSON.stringify({ error: 'Authentication failed' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// 处理Twitter回调
+async function handleTwitterCallback(request) {
+  try {
+    const url = new URL(request.url);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+
+    // 获取cookies
+    const cookieString = request.headers.get('Cookie') || '';
+    const cookies = parseCookies(cookieString);
+    
+    // 验证状态
+    const storedState = cookies.auth_state;
+    const returnUrl = cookies.auth_return_url || ALLOWED_ORIGIN;
+    
+    if (!code || !state || state !== storedState) {
+      return redirectWithError(returnUrl, 'invalid_state');
+    }
+    
+    // 交换授权码获取访问令牌
+    const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`)}`
+      },
+      body: new URLSearchParams({
+        'code': code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': TWITTER_REDIRECT_URI,
+        'code_verifier': 'challenge'
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text();
+      console.error('Twitter token error:', error);
+      return redirectWithError(returnUrl, 'token_error');
+    }
+    
+    const tokenData = await tokenResponse.json();
+    const { access_token } = tokenData;
+    
+    // 获取用户信息
+    const userResponse = await fetch('https://api.twitter.com/2/users/me?user.fields=profile_image_url', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+    
+    if (!userResponse.ok) {
+      const error = await userResponse.text();
+      console.error('Twitter user info error:', error);
+      return redirectWithError(returnUrl, 'user_info_error');
+    }
+    
+    const userData = await userResponse.json();
+    const user = {
+      id: userData.data.id,
+      name: userData.data.name,
+      profileImage: userData.data.profile_image_url
+    };
+    
+    // 重定向回应用并设置用户cookie
+    const headers = new Headers({
+      'Location': returnUrl,
+      'Set-Cookie': `auth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/`,
+      'Set-Cookie': `auth_return_url=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/`,
+      'Set-Cookie': `user=${JSON.stringify(user)}; Secure; SameSite=Lax; Max-Age=2592000; Path=/` // 30天
+    });
+    
+    return new Response(null, {
+      status: 302,
+      headers
+    });
+  } catch (error) {
+    console.error('Twitter callback error:', error);
+    return new Response(JSON.stringify({ error: 'Authentication callback failed' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// 辅助函数：重定向到错误页面
+function redirectWithError(returnUrl, errorType) {
+  const redirectUrl = new URL(returnUrl);
+  redirectUrl.searchParams.append('authError', errorType);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      'Location': redirectUrl.toString()
+    }
+  });
+}
+
+// 辅助函数：解析cookies
+function parseCookies(cookieString) {
+  const cookies = {};
+  cookieString.split(';').forEach(cookie => {
+    const [name, value] = cookie.trim().split('=');
+    if (name) cookies[name] = value;
+  });
+  return cookies;
+} 
