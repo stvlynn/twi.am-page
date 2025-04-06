@@ -10,8 +10,7 @@ export const REDIRECT_WHITELIST = [
   // 应用子域名
   'https://app.twi.am',
   'https://mbti.twi.am',
-  'https://analytics.twi.am',
-  'https://stats.twi.am',
+  'https://doodle.twi.am',
   // 环境变量中设置的APP_URL
   process.env.NEXT_PUBLIC_APP_URL,
 ];

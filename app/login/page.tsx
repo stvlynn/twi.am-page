@@ -53,7 +53,8 @@ export default function LoginPage() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
   const handleTwitterLogin = () => {
-    // 获取当前URL + 可能的returnUrl参数
+    // 获取可能的returnUrl参数，并传递给Twitter认证流程
+    // 如果没有returnUrl，默认使用主域名
     const redirectUrl = returnUrl 
       ? `/api/auth/twitter?returnUrl=${encodeURIComponent(returnUrl)}`
       : `/api/auth/twitter?returnUrl=${encodeURIComponent(window.location.origin)}`;
