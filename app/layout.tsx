@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { getConfig } from '@/lib/config';
-import { CookiesProvider } from 'next-client-cookies/server';
 import { UserAvatar } from '@/components/UserAvatar';
 
 import '@fontsource/inter/400.css';
@@ -119,13 +118,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.png" />
       </head>
       <body className="font-inter">
-        <CookiesProvider>
-          <PixelBackground />
-          <div className="fixed top-4 right-4 z-50">
-            <UserAvatar />
-          </div>
-          {children}
-        </CookiesProvider>
+        <PixelBackground />
+        <div className="fixed top-4 right-4 z-50">
+          <UserAvatar />
+        </div>
+        {children}
       </body>
     </html>
   );

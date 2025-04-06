@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { useCookies } from 'next-client-cookies';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 interface UserInfo {
   id: string;
@@ -19,12 +19,11 @@ interface UserInfo {
 }
 
 export function UserAvatar() {
-  const cookies = useCookies();
   const router = useRouter();
   const [user, setUser] = useState<UserInfo | null>(null);
   
   useEffect(() => {
-    const userCookie = cookies.get('user');
+    const userCookie = Cookies.get('user');
     if (userCookie) {
       try {
         setUser(JSON.parse(userCookie));
@@ -32,7 +31,7 @@ export function UserAvatar() {
         console.error('Failed to parse user cookie', e);
       }
     }
-  }, [cookies]);
+  }, []);
 
   const handleLogin = () => {
     // 点击后跳转到登录页
@@ -40,7 +39,7 @@ export function UserAvatar() {
   };
 
   const handleLogout = () => {
-    cookies.remove('user');
+    Cookies.remove('user');
     setUser(null);
   };
 

@@ -42,12 +42,14 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 10, // 10分钟有效期
       path: '/',
+      sameSite: 'lax'
     });
     response.cookies.set('auth_return_url', returnUrl, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 10,
       path: '/',
+      sameSite: 'lax'
     });
     
     return response;

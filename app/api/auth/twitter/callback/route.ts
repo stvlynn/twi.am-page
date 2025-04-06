@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 30, // 30天有效期
       path: '/',
+      sameSite: 'lax'
     });
     
     return response;
