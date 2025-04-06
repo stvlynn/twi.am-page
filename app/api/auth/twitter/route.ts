@@ -9,6 +9,9 @@ const TWITTER_REDIRECT_URI = process.env.TWITTER_REDIRECT_URI ||
 // 权限范围 - 我们只需要基本信息
 const TWITTER_SCOPES = ['users.read', 'tweet.read'].join(' ');
 
+// 提取顶级域名，用于设置cookie
+const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'twi.am';
+
 // 生成随机状态参数以防CSRF攻击
 function generateState() {
   return Math.random().toString(36).substring(2);
@@ -42,14 +45,16 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 10, // 10分钟有效期
       path: '/',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      domain: ROOT_DOMAIN // 明确设置为顶级域名
     });
     response.cookies.set('auth_return_url', returnUrl, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 10,
       path: '/',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      domain: ROOT_DOMAIN // 明确设置为顶级域名
     });
     
     return response;

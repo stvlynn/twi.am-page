@@ -7,6 +7,9 @@ const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET as string;
 const TWITTER_REDIRECT_URI = process.env.TWITTER_REDIRECT_URI || 
   `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/twitter/callback`;
 
+// 提取顶级域名，用于设置cookie
+const ROOT_DOMAIN = process.env.ROOT_DOMAIN || 'twi.am';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -73,13 +76,14 @@ export async function GET(request: NextRequest) {
     response.cookies.delete('auth_state');
     response.cookies.delete('auth_return_url');
     
-    // 将用户信息存储在客户端cookie中
+    // 将用户信息存储在客户端cookie中，明确设置domain以确保跨子域名共享
     response.cookies.set('user', JSON.stringify(user), {
       httpOnly: false, // 允许客户端JavaScript访问
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 30, // 30天有效期
       path: '/',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      domain: ROOT_DOMAIN // 明确设置为顶级域名，确保在所有子域名共享
     });
     
     return response;

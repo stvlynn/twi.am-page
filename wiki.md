@@ -29,7 +29,8 @@ response.cookies.set('user', JSON.stringify(user), {
   secure: process.env.NODE_ENV === 'production', 
   maxAge: 60 * 60 * 24 * 30,  // 30 days
   path: '/',  
-  sameSite: 'lax'  // Balances security and functionality
+  sameSite: 'lax',  // Balances security and functionality
+  domain: ROOT_DOMAIN  // Explicitly set to top-level domain for cross-subdomain sharing
 });
 ```
 
@@ -42,9 +43,284 @@ response.cookies.set('auth_state', state, {
   secure: process.env.NODE_ENV === 'production',
   maxAge: 60 * 10,  // 10 minutes
   path: '/',
-  sameSite: 'lax'
+  sameSite: 'lax',
+  domain: ROOT_DOMAIN  // Explicitly set to top-level domain
 });
 ```
+
+## Handling and Parsing Cookies After Redirect
+
+When a user is redirected back to the original application (e.g., `doodle.twi.am`) after authentication, the application needs to properly handle and parse the shared cookies. Here's how to implement this in your subdomain applications:
+
+### 1. Basic Implementation in React
+
+```tsx
+// components/AuthProvider.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
+
+interface User {
+  id: string;
+  name: string;
+  profileImage: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  isLoading: boolean;
+  login: () => void;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Parse user cookie on mount and when cookie changes
+  useEffect(() => {
+    const loadUserFromCookie = () => {
+      setIsLoading(true);
+      try {
+        const userCookie = Cookies.get('user');
+        if (userCookie) {
+          const parsedUser = JSON.parse(userCookie);
+          setUser(parsedUser);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Failed to parse user cookie:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Load user initially
+    loadUserFromCookie();
+
+    // Set up listener for cookie changes (simplified)
+    const checkCookieInterval = setInterval(loadUserFromCookie, 5000);
+    return () => clearInterval(checkCookieInterval);
+  }, []);
+
+  // Redirect to login page
+  const login = () => {
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://twi.am/login?returnUrl=${currentUrl}`;
+  };
+
+  // Clear user cookie
+  const logout = () => {
+    Cookies.remove('user', { domain: process.env.ROOT_DOMAIN || 'twi.am', path: '/' });
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Custom hook to use auth
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+```
+
+### 2. Using the Auth Context in Your Application
+
+```tsx
+// _app.tsx or layout.tsx
+import { AuthProvider } from '../components/AuthProvider';
+
+function MyApp({ Component, pageProps }) {
+  return (
+    <AuthProvider>
+      <Component {...pageProps} />
+    </AuthProvider>
+  );
+}
+
+// In your components
+import { useAuth } from '../components/AuthProvider';
+
+function Header() {
+  const { user, isLoading, login, logout } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <header>
+      {user ? (
+        <div>
+          <img src={user.profileImage} alt={user.name} />
+          <span>Welcome, {user.name}</span>
+          <button onClick={logout}>Logout</button>
+        </div>
+      ) : (
+        <button onClick={login}>Login</button>
+      )}
+    </header>
+  );
+}
+```
+
+### 3. Handling Redirect Parameters
+
+When users are redirected back to your application, you may want to check for error parameters:
+
+```tsx
+// pages/index.tsx or app/page.tsx
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '../components/AuthProvider';
+
+export default function HomePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    // Check for auth errors from redirect
+    const authError = searchParams.get('authError');
+    if (authError) {
+      console.error('Authentication error:', authError);
+      // Show error message to user
+    }
+    
+    // Clean up URL if needed
+    if (authError) {
+      const newUrl = window.location.pathname;
+      router.replace(newUrl);
+    }
+  }, [searchParams, router]);
+  
+  return (
+    <div>
+      {user ? (
+        <div>Logged in as {user.name}</div>
+      ) : (
+        <div>Please log in to continue</div>
+      )}
+    </div>
+  );
+}
+```
+
+### 4. Advanced: Integrating with State Management Libraries
+
+#### With Redux
+
+```tsx
+// store/authSlice.js
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
+
+export const loadUserFromCookie = createAsyncThunk(
+  'auth/loadUserFromCookie',
+  async () => {
+    const userCookie = Cookies.get('user');
+    if (userCookie) {
+      return JSON.parse(userCookie);
+    }
+    throw new Error('No user cookie found');
+  }
+);
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState: {
+    user: null,
+    isLoading: false,
+    error: null
+  },
+  reducers: {
+    logout(state) {
+      Cookies.remove('user', { domain: process.env.ROOT_DOMAIN || 'twi.am', path: '/' });
+      state.user = null;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadUserFromCookie.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(loadUserFromCookie.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(loadUserFromCookie.rejected, (state, action) => {
+        state.isLoading = false;
+        state.user = null;
+        state.error = action.error.message;
+      });
+  }
+});
+
+export const { logout } = authSlice.actions;
+export default authSlice.reducer;
+```
+
+## Cross-Domain Cookie Sharing for Independent Vercel Projects
+
+Since each subdomain (e.g., `doodle.twi.am`, `mbti.twi.am`) may be independently deployed on Vercel as separate projects, special configuration is required to ensure cookie sharing works correctly:
+
+### 1. Environment Configuration
+
+Add the `ROOT_DOMAIN` environment variable to all projects:
+
+```
+# In .env.local or Vercel environment variables
+ROOT_DOMAIN=twi.am
+```
+
+### 2. Explicitly Set Cookie Domain
+
+All cookies that need to be shared across subdomains must explicitly set the `domain` property:
+
+```typescript
+domain: process.env.ROOT_DOMAIN || 'twi.am'
+```
+
+### 3. Client-Side Configuration
+
+In each independent application, use the same js-cookie setup:
+
+```javascript
+// In each subdomain application
+import Cookies from 'js-cookie';
+
+function getUserInfo() {
+  const userCookie = Cookies.get('user');
+  if (userCookie) {
+    try {
+      return JSON.parse(userCookie);
+    } catch (e) {
+      console.error('Failed to parse user cookie', e);
+    }
+  }
+  return null;
+}
+```
+
+### 4. Vercel Project Configuration
+
+For each independent Vercel project:
+
+1. Set the same `ROOT_DOMAIN` environment variable
+2. Ensure all projects use the same cookie reading logic
+3. Confirm all projects are using HTTPS (required for secure cookies)
 
 ## Cross-Domain Authentication Flow
 
@@ -187,30 +463,35 @@ if (userCookie) {
 3. **URL Validation**: All redirect URLs are validated against whitelist
 4. **Cookie Scope**: Scoped to path '/' to be available across all paths
 5. **Secure Flag**: Enabled in production environments for HTTPS-only transmission
+6. **Domain Setting**: Explicitly set to top-level domain to enable sharing across subdomains
 
 ## Cross-Subdomain Implementation Notes
 
 - User information is stored in a non-httpOnly cookie to allow JavaScript access across subdomains
 - Custom redirect handling preserves authentication context between domains
 - The system uses centralized authentication with distributed access
+- Explicit domain setting ensures cookies work across independent Vercel deployments
 
 ## Integration for New Subdomains
 
 1. Add the new subdomain to the `REDIRECT_WHITELIST` array
 2. Ensure the subdomain has the same implementation of `js-cookie` for cookie access
-3. No changes needed to the core authentication flow
+3. Set the same `ROOT_DOMAIN` environment variable in the new project
+4. No changes needed to the core authentication flow
 
 ## Technical Limitations
 
 - Relies on JavaScript being enabled in the client browser
 - Requires proper CORS configuration for API requests between subdomains
 - Cookie size limited to 4KB (sufficient for basic user information)
+- All subdomains must be on the same top-level domain
 
 ## Example: Cross-Domain Login Flow
 
 1. User visits `mbti.twi.am` and clicks login
 2. User is redirected to `/login?returnUrl=https://mbti.twi.am`
-3. After Twitter authentication, user info is stored in cookie
+3. After Twitter authentication, user info is stored in cookie with `domain: 'twi.am'`
 4. User is redirected back to `mbti.twi.am` with authentication intact
+5. The `mbti.twi.am` application can access the shared cookie because of the domain setting
 
  
