@@ -48,6 +48,131 @@ response.cookies.set('auth_state', state, {
 });
 ```
 
+## Cross-Domain Logout Feature
+
+The platform supports cross-domain logout to ensure consistent user sessions across all subdomains. When a user logs out from any subdomain, the logout should propagate to all other subdomains.
+
+### Logout API Implementation
+
+The system provides a dedicated logout API endpoint that handles cookie clearing across all domains:
+
+```typescript
+// app/api/auth/logout/route.ts
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const returnUrlParam = searchParams.get('returnUrl');
+    
+    // Validate returnUrl and use safe URL
+    const returnUrl = getSafeRedirectUrl(returnUrlParam);
+    
+    // Create response with redirect to return URL
+    const response = NextResponse.redirect(new URL(returnUrl, request.url));
+    
+    // Delete the user cookie by setting it to expire immediately
+    // This will clear the cookie across all subdomains
+    response.cookies.set('user', '', {
+      expires: new Date(0), // Set expire date to past
+      path: '/',
+      sameSite: 'lax',
+      domain: ROOT_DOMAIN,
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: false
+    });
+    
+    return response;
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Redirect to home page if there's an error
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+}
+```
+
+### Cross-Domain Logout Flow
+
+1. **User initiates logout** from any subdomain application
+2. **Application redirects** to the central logout endpoint with a return URL
+3. **Logout endpoint clears cookies** with domain set to the top-level domain
+4. **User is redirected** back to the original application with cleared cookies
+5. **All subdomains recognize** the user is now logged out
+
+### Logout URL Format
+
+To initiate a logout from any subdomain application, use one of these formats:
+
+1. **Direct API call** (recommended for programmatic logout):
+   ```
+   https://twi.am/api/auth/logout?returnUrl=https://your-subdomain.twi.am/your-path
+   ```
+
+2. **Via login page** (useful for visual feedback to user):
+   ```
+   https://twi.am/login?returnUrl=https://your-subdomain.twi.am/your-path&logout=true
+   ```
+
+### Client Implementation Examples
+
+#### Example 1: Direct API Call
+
+```javascript
+// In your subdomain application
+function logout() {
+  const currentUrl = window.location.href;
+  window.location.href = `https://twi.am/api/auth/logout?returnUrl=${encodeURIComponent(currentUrl)}`;
+}
+```
+
+#### Example 2: Via Login Page with Feedback
+
+```javascript
+// In your subdomain application
+function logout() {
+  const currentUrl = window.location.href;
+  window.location.href = `https://twi.am/login?returnUrl=${encodeURIComponent(currentUrl)}&logout=true`;
+}
+```
+
+## Login Page User Interface
+
+The login page (`/login`) now provides enhanced user experience based on authentication state:
+
+### For Logged In Users:
+
+- Displays user's profile image
+- Shows user's name
+- Shows user's ID
+- Provides a sign out button
+- Indicates the return destination after logout (if applicable)
+
+### For Logged Out Users:
+
+- Provides Twitter/X authentication option
+- Provides Web3 authentication option (coming soon)
+- Shows terms of service information
+
+### Handling Logout Parameter
+
+The login page automatically processes the `logout` parameter to facilitate cross-domain logout:
+
+```typescript
+// In app/login/page.tsx
+useEffect(() => {
+  const checkUserAndLogout = async () => {
+    // Check if logout parameter is present
+    if (logout && returnUrl) {
+      // Redirect to logout API with return URL
+      window.location.href = `/api/auth/logout?returnUrl=${encodeURIComponent(returnUrl)}`;
+      return;
+    }
+    
+    // Otherwise check for user cookie...
+  };
+  
+  checkUserAndLogout();
+}, [logout, returnUrl]);
+```
+
 ## Handling and Parsing Cookies After Redirect
 
 When a user is redirected back to the original application (e.g., `doodle.twi.am`) after authentication, the application needs to properly handle and parse the shared cookies. Here's how to implement this in your subdomain applications:
@@ -114,8 +239,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Clear user cookie
   const logout = () => {
-    Cookies.remove('user', { domain: process.env.ROOT_DOMAIN || 'twi.am', path: '/' });
-    setUser(null);
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://twi.am/api/auth/logout?returnUrl=${currentUrl}`;
   };
 
   return (
@@ -246,6 +371,8 @@ const authSlice = createSlice({
   },
   reducers: {
     logout(state) {
+      // Note: This only removes the local cookie
+      // For cross-domain logout, redirect to the logout API
       Cookies.remove('user', { domain: process.env.ROOT_DOMAIN || 'twi.am', path: '/' });
       state.user = null;
     }
@@ -268,7 +395,15 @@ const authSlice = createSlice({
   }
 });
 
+// For local state management only
 export const { logout } = authSlice.actions;
+
+// For cross-domain logout
+export const logoutAllDomains = () => () => {
+  const currentUrl = encodeURIComponent(window.location.href);
+  window.location.href = `https://twi.am/api/auth/logout?returnUrl=${currentUrl}`;
+};
+
 export default authSlice.reducer;
 ```
 

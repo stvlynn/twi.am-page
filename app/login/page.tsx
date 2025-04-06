@@ -1,14 +1,23 @@
 'use client';
 
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Twitter, Wallet2, ArrowLeft, X } from 'lucide-react';
+import { Twitter, Wallet2, ArrowLeft, X, LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import Cookies from 'js-cookie';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-// 自定义Modal组件
+// User interface
+interface UserInfo {
+  id: string;
+  name: string;
+  profileImage: string;
+}
+
+// Modal component
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,7 +31,7 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* 半透明背景遮罩 */}
+          {/* Semi-transparent background overlay */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -31,7 +40,7 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
             onClick={onClose}
           />
           
-          {/* 弹窗内容 */}
+          {/* Modal content */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -50,16 +59,56 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
+  const logout = searchParams.get('logout') === '' || searchParams.get('logout') === 'true';
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check for user cookie and handle logout parameter
+  useEffect(() => {
+    const checkUserAndLogout = async () => {
+      setLoading(true);
+      
+      // Check if logout parameter is present
+      if (logout && returnUrl) {
+        // Redirect to logout API with return URL
+        window.location.href = `/api/auth/logout?returnUrl=${encodeURIComponent(returnUrl)}`;
+        return;
+      }
+      
+      // Otherwise check for user cookie
+      try {
+        const userCookie = Cookies.get('user');
+        if (userCookie) {
+          setUser(JSON.parse(userCookie));
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Failed to parse user cookie:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkUserAndLogout();
+  }, [logout, returnUrl]);
 
   const handleTwitterLogin = () => {
-    // 获取可能的returnUrl参数，并传递给Twitter认证流程
-    // 如果没有returnUrl，默认使用主域名
+    // Get possible returnUrl parameter, and pass it to Twitter auth flow
+    // If no returnUrl, use main domain as default
     const redirectUrl = returnUrl 
       ? `/api/auth/twitter?returnUrl=${encodeURIComponent(returnUrl)}`
       : `/api/auth/twitter?returnUrl=${encodeURIComponent(window.location.origin)}`;
       
     window.location.href = redirectUrl;
+  };
+
+  const handleLogout = () => {
+    // Build return URL - if not provided, use current origin
+    const logoutReturnUrl = returnUrl || window.location.origin;
+    window.location.href = `/api/auth/logout?returnUrl=${encodeURIComponent(logoutReturnUrl)}`;
   };
 
   const handleWeb3Login = () => {
@@ -68,7 +117,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-twitter-blue/10 via-background to-background p-4">
-      {/* 返回按钮 */}
+      {/* Back button */}
       <Button 
         variant="ghost" 
         size="sm" 
@@ -91,53 +140,102 @@ export default function LoginPage() {
         </div>
         <h1 className="text-3xl font-bold text-center">Welcome to Twi.am</h1>
         <p className="text-center text-muted-foreground mt-2">
-          Sign in to your account to access all features
+          {user ? 'You are currently signed in' : 'Sign in to your account to access all features'}
         </p>
       </motion.div>
       
-      {/* Login Card */}
+      {/* Login Card or User Info Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="w-full max-w-md"
       >
-        <Card className="border border-border/40 shadow-xl bg-card/95 backdrop-blur-sm">
-          <CardContent className="pt-6 pb-4 space-y-4">
-            <div className="space-y-4">
-              <Button 
-                onClick={handleTwitterLogin}
-                className="w-full h-12 bg-[#1DA1F2] hover:bg-[#1a94da] text-white flex items-center justify-center gap-2"
-                size="lg"
-              >
-                <Twitter className="h-5 w-5" />
-                <span>Login with X</span>
-              </Button>
-              
-              <div className="relative flex items-center justify-center">
-                <Separator className="absolute w-full" />
-                <span className="relative px-2 bg-card text-xs text-muted-foreground">OR</span>
+        {loading ? (
+          // Loading state
+          <Card className="border border-border/40 shadow-xl bg-card/95 backdrop-blur-sm">
+            <CardContent className="pt-6 pb-6 flex justify-center">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="rounded-full bg-muted h-16 w-16 mb-4"></div>
+                <div className="h-4 bg-muted rounded w-24 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-32"></div>
               </div>
-              
+            </CardContent>
+          </Card>
+        ) : user ? (
+          // User is logged in - show user info
+          <Card className="border border-border/40 shadow-xl bg-card/95 backdrop-blur-sm">
+            <CardHeader className="pb-2 pt-6 text-center">
+              <Avatar className="h-24 w-24 mx-auto mb-2">
+                {user.profileImage ? (
+                  <AvatarImage src={user.profileImage} alt={user.name} />
+                ) : (
+                  <AvatarFallback>
+                    <UserIcon className="h-12 w-12" />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <h2 className="text-xl font-semibold">{user.name}</h2>
+              <p className="text-sm text-muted-foreground">ID: {user.id}</p>
+            </CardHeader>
+            <CardContent className="pb-2 space-y-4">
+              <p className="text-center text-sm">You are currently logged in. You can access all features of Twi.am.</p>
+            </CardContent>
+            <CardFooter className="flex flex-col pt-2 pb-6">
               <Button 
-                onClick={handleWeb3Login}
-                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2"
+                onClick={handleLogout}
+                className="w-full h-12 bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center gap-2"
                 size="lg"
               >
-                <Wallet2 className="h-5 w-5" />
-                <span>Login with Web3 Wallet</span>
+                <LogOut className="h-5 w-5" />
+                <span>Sign Out</span>
               </Button>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col pt-2 pb-6">
-            <p className="text-xs text-center text-muted-foreground px-6">
-              By continuing, you agree to Twi.am's Terms of Service and Privacy Policy
-            </p>
-          </CardFooter>
-        </Card>
+              {returnUrl && (
+                <p className="text-xs text-center text-muted-foreground mt-4">
+                  You will be redirected back to your application after signing out.
+                </p>
+              )}
+            </CardFooter>
+          </Card>
+        ) : (
+          // User is not logged in - show login options
+          <Card className="border border-border/40 shadow-xl bg-card/95 backdrop-blur-sm">
+            <CardContent className="pt-6 pb-4 space-y-4">
+              <div className="space-y-4">
+                <Button 
+                  onClick={handleTwitterLogin}
+                  className="w-full h-12 bg-[#1DA1F2] hover:bg-[#1a94da] text-white flex items-center justify-center gap-2"
+                  size="lg"
+                >
+                  <Twitter className="h-5 w-5" />
+                  <span>Login with X</span>
+                </Button>
+                
+                <div className="relative flex items-center justify-center">
+                  <Separator className="absolute w-full" />
+                  <span className="relative px-2 bg-card text-xs text-muted-foreground">OR</span>
+                </div>
+                
+                <Button 
+                  onClick={handleWeb3Login}
+                  className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2"
+                  size="lg"
+                >
+                  <Wallet2 className="h-5 w-5" />
+                  <span>Login with Web3 Wallet</span>
+                </Button>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col pt-2 pb-6">
+              <p className="text-xs text-center text-muted-foreground px-6">
+                By continuing, you agree to Twi.am's Terms of Service and Privacy Policy
+              </p>
+            </CardFooter>
+          </Card>
+        )}
       </motion.div>
 
-      {/* 自定义Coming Soon弹窗 */}
+      {/* Coming Soon Modal */}
       <Modal isOpen={comingSoonOpen} onClose={() => setComingSoonOpen(false)}>
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden">
           <div className="relative p-6">
