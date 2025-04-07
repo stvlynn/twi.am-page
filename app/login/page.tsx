@@ -14,6 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 interface UserInfo {
   id: string;
   name: string;
+  username?: string; // Twitter handle may be optional for backwards compatibility
   profileImage: string;
 }
 
@@ -176,7 +177,10 @@ export default function LoginPage() {
                 )}
               </Avatar>
               <h2 className="text-xl font-semibold">{user.name}</h2>
-              <p className="text-sm text-muted-foreground">ID: {user.id}</p>
+              {user.username && (
+                <p className="text-sm text-twitter-blue">@{user.username}</p>
+              )}
+              <p className="text-sm text-muted-foreground mt-1">ID: {user.id}</p>
             </CardHeader>
             <CardContent className="pb-2 space-y-4">
               <p className="text-center text-sm">You are currently logged in. You can access all features of Twi.am.</p>

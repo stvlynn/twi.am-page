@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json();
     const { access_token } = tokenData;
     
-    // 获取用户信息
-    const userResponse = await fetch('https://api.twitter.com/2/users/me?user.fields=profile_image_url', {
+    // 获取用户信息，添加username字段（Twitter handle）
+    const userResponse = await fetch('https://api.twitter.com/2/users/me?user.fields=profile_image_url,username', {
       headers: {
         'Authorization': `Bearer ${access_token}`
       }
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     const user = {
       id: userData.data.id,
       name: userData.data.name,
+      username: userData.data.username, // 添加Twitter handle
       profileImage: userData.data.profile_image_url,
     };
     

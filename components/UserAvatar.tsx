@@ -15,6 +15,7 @@ import Cookies from 'js-cookie';
 interface UserInfo {
   id: string;
   name: string;
+  username?: string; // Twitter handle - optional for backwards compatibility
   profileImage: string;
 }
 
@@ -63,6 +64,9 @@ export function UserAvatar() {
           <>
             <div className="px-2 py-1.5 text-sm font-medium text-center border-b">
               {user.name}
+              {user.username && (
+                <div className="text-xs text-twitter-blue font-normal">@{user.username}</div>
+              )}
             </div>
             <DropdownMenuItem onClick={handleLogout}>
               Logout
