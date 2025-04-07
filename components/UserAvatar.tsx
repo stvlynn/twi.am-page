@@ -40,8 +40,10 @@ export function UserAvatar() {
   };
 
   const handleLogout = () => {
-    Cookies.remove('user');
-    setUser(null);
+    // 使用跨域登出API路由，确保所有子域名的cookie都被清除
+    // 登出后重定向回当前页面
+    const currentUrl = window.location.href;
+    window.location.href = `/api/auth/logout?returnUrl=${encodeURIComponent(currentUrl)}`;
   };
 
   return (

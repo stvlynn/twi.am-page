@@ -188,7 +188,7 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col pt-2 pb-6">
               <Button 
                 onClick={handleLogout}
-                className="w-full h-12 bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center gap-2"
+                className="w-full h-12 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2 border-0"
                 size="lg"
               >
                 <LogOut className="h-5 w-5" />
